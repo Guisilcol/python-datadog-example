@@ -1,5 +1,4 @@
 from logging import Logger
-from os import environ
 
 from pythondatadogexample.datadog_api import (
     HTTPLogFactory, 
