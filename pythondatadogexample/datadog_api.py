@@ -1,5 +1,5 @@
 from typing import Optional
-from datadog_api_client.v2 import Configuration, ApiClient, AsyncApiClient
+from datadog_api_client.v2 import Configuration, ApiClient
 from datadog_api_client.v2.models import HTTPLog, HTTPLogItem
 from datadog_api_client.v2.api.logs_api import LogsApi
 
