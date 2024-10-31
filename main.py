@@ -8,14 +8,23 @@ def main():
     env = "DEV"
     
     log = logger.get_datadog_logger(
-        service_name='service_itau_logger', 
-        ddsource='ddsourceitau_logger',
-        acronym='QJ6',
+        {
+            'sigla': 'ITAU',
+            'cloud_provider': 'aws',
+            'condominio': 'devops',
+            'account_id': '123456789012',
+            'environment': env,
+            'version': '1.0.0',
+            'service': 'ITAU-TEST',
+            'hostname': os.getenv('HOSTNAME', 'localhost'),
+            'correlationId': '123456789',
+            'ddsource': 'python',
+        },
+
         logger_name='itau_logger',
         api_key=api_key,
         app_key=app_key,
         site=site,
-        environment=env,
         raise_on_error=True
     )
     
