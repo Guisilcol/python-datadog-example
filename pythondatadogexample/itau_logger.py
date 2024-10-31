@@ -1,3 +1,4 @@
+from typing import Literal, Optional
 from logging import Logger
 from pythondatadogexample.datadog_api import (
     HTTPLogFactory, 
@@ -8,21 +9,16 @@ from pythondatadogexample.datadog_api import (
 from pythondatadogexample.formatter import FormatterFactory
 from pythondatadogexample.handler import LogHandlerFactory, PossibleLevels
 from pythondatadogexample.logger import LoggerFactory
+from pythondatadogexample.tags import Tags
 
 def get_datadog_logger(
-    service_name: str,
-    ddsource: str,
-    acronym: str,
+    tags: Tags,
     data_dog_handler_level: PossibleLevels = 'WARNING',
     console_handler_level: PossibleLevels = 'DEBUG',
-    job_name: str = '',
-    job_run_id: str = '',
-    hostname: str = '',
-    environment: str = '',
     api_key: str = '',
     app_key: str = '',
-    logger_name: str = 'datadog_logger',
     site: str = 'datadoghq.com',
+    logger_name: str = 'datadog_logger',
     raise_on_error: bool = False
 ) -> Logger:
     """
@@ -48,9 +44,7 @@ def get_datadog_logger(
     """
     
     # Cria o formatter JSON
-    formatter = FormatterFactory().create_json_formatter(
-        environment, acronym, job_name, job_run_id, hostname
-    )
+    formatter = FormatterFactory().create_json_formatter(tags)
 
     # Configuração da API Datadog e criação de cliente e API
     datadog_api_configuration = ConfigurationFactory().create(api_key, app_key, site)
@@ -60,8 +54,8 @@ def get_datadog_logger(
     # Criação dos handlers para envio dos logs ao Datadog e console.
     log_factory = HTTPLogFactory()
     datadog_handler = LogHandlerFactory().create_datadog_handler(
-        logs_api, log_factory, service_name, ddsource, data_dog_handler_level, formatter, raise_on_error
-    )
+        tags, logs_api, log_factory, data_dog_handler_level, formatter, raise_on_error
+    ) 
     console_handler = LogHandlerFactory().create_console_handler(console_handler_level, formatter)
 
     # Criação do logger com os handlers configurados.

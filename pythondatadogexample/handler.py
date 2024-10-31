@@ -5,6 +5,7 @@ from datadog_api_client.v2.api.logs_api import LogsApi
 
 from pythondatadogexample.datadog_api import HTTPLogFactory
 from pythondatadogexample.formatter import Formatter
+from pythondatadogexample.tags import Tags
 
 LEVELS_MAP = {
     'INFO': INFO,
@@ -30,9 +31,8 @@ class DatadogHandler(StreamHandler):
 
     def __init__(
         self, 
+        tags: Tags,
         logs_api: LogsApi, 
-        service_name: str, 
-        ddsource: str, 
         log_factory: HTTPLogFactory, 
         raise_on_error: bool = False, 
         *args, 
@@ -47,9 +47,8 @@ class DatadogHandler(StreamHandler):
             ddsource (str): Fonte identificadora do log.
         """
         super().__init__(*args, **kwargs)
+        self.tags = tags
         self.logs_api = logs_api
-        self.service_name = service_name
-        self.ddsource = ddsource
         self.log_factory = log_factory
         self.raise_on_error = raise_on_error
 
@@ -57,19 +56,24 @@ class DatadogHandler(StreamHandler):
         """
         Envia o log formatado ao Datadog usando a API.
 
-        Parâmetros:1
+        Parâmetros:
             record (LogRecord): Registro de log a ser enviado ao Datadog.
         """
         msg = self.format(record)        
-        body = self.log_factory.create(self.ddsource, f"env:{os.getenv('ENV', 'development')}", msg, self.service_name)
+        ddtags = [f"{key}:{value}" for key, value in self.tags.items()]
+        ddtags = ','.join(ddtags)
+        
+        body = self.log_factory.create(self.tags.get('ddsource'), 
+                                       ddtags, 
+                                       msg, 
+                                       self.tags.get('service'))
 
-        try:
+        try: 
             self.logs_api.submit_log(body)
         except Exception as e:
             error_message = f"An error occurred when trying to submit the log to Datadog using the LogsApi.submit_log method"
-            
             if self.raise_on_error:
-                raise Exception(f"An error occurred when trying to submit the log to Datadog using the LogsApi.submit_log method") from e
+                raise Exception(error_message) from e
 
             print(error_message)
             print(e)
@@ -81,10 +85,9 @@ class LogHandlerFactory:
 
     def create_datadog_handler(
         self, 
+        tags: Tags,
         logs_api: LogsApi, 
         log_factory: HTTPLogFactory, 
-        service_name: str, 
-        ddsource: str, 
         level: PossibleLevels, 
         formater: Formatter,
         raise_on_error: bool = False
@@ -101,7 +104,7 @@ class LogHandlerFactory:
         Retorna:
             StreamHandler: Instância de DatadogHandler configurada para o Datadog.
         """
-        handler = DatadogHandler(logs_api, service_name, ddsource, log_factory, raise_on_error)
+        handler = DatadogHandler(tags, logs_api, log_factory, raise_on_error)
         handler.setLevel(LEVELS_MAP[level])
         handler.setFormatter(formater)
         return handler

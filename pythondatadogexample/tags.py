@@ -16,9 +16,12 @@ class Tags(TypedDict):
         - service (str): Nome do serviço, obrigatório e deve seguir o formato <SIGLA>-<APP-NOME> (ex.: 'dy5-envio-pix', 'ep9-consulta-saldo').
         - produto (str): Produto da aplicação, obrigatório (ex.: 'Open Finance', 'Pix').
         - jornada (str): Jornada da aplicação, obrigatório (ex.: 'Jornada de Confirmação', 'Jornada de Consumo').
+        - correlationId (str): ID de correlação, obrigatório (ex.: '123e4567-e89b-12d3-a456-426614174000').
         - repo_url (Optional[str]): URL do repositório, obrigatório quando cloud_provider for 'aws' ou condominio for 'devops' ou 'tradops' (ex.: 'https://github.com/itau-corp/app').
         - subjornada (Optional[str]): Subjornada, opcional mas recomendada (ex.: 'Validação da leitura do QRCode no Pix').
         - sigla_app (Optional[str]): Sigla da aplicação, opcional.
+        - ddsource (Optional[str]): Fonte do log no Datadog. Geralemente é a tecnologia utilizada. Opcional.
+        - hostname (Optional[str]): Nome do host onde o log é gerado. Opcional.
     """
     sigla: str
     cloud_provider: Optional[Literal['aws', 'gcp', 'azure']]
@@ -30,6 +33,10 @@ class Tags(TypedDict):
     service: str
     produto: str 
     jornada: str
-    repo_url: Optional[str]
     subjornada: Optional[str]
+    correlationId: str
+    repo_url: Optional[str]
     sigla_app: Optional[str]
+    ddsource: Optional[str]
+    hostname: Optional[str]
+    

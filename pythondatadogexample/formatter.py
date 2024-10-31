@@ -2,6 +2,8 @@ from typing import Optional
 from logging import Formatter, LogRecord
 from json import dumps
 
+from pythondatadogexample.tags import Tags
+
 class JSONFormatter(Formatter):
     """
     Formata logs no formato JSON com informações de contexto do ambiente e do job em execução.
@@ -16,31 +18,15 @@ class JSONFormatter(Formatter):
 
     def __init__(
         self,
-        environment: str,
-        acronym: str,
-        job_name: Optional[str] = None,
-        job_run_id: Optional[str] = None,
-        hostname: Optional[str] = None,
+        tags: Tags,
         *args,
         **kwargs
     ):
         """
         Inicializa o JSONFormatter com informações de ambiente, serviço e execução.
-
-        Parâmetros:
-            environment (str): Ambiente do código (ex.: produção, desenvolvimento).
-            acronym (str): Acrônimo do serviço.
-            job_name (Optional[str]): Nome do job, se disponível.
-            job_run_id (Optional[str]): ID de execução do job, se disponível.
-            hostname (Optional[str]): Nome do host, se disponível.
-            *args, **kwargs: Argumentos adicionais para a superclasse Formatter.
         """
         super().__init__(*args, **kwargs)
-        self.environment = environment
-        self.acronym = acronym
-        self.job_name = job_name
-        self.job_run_id = job_run_id
-        self.hostname = hostname 
+        self.tags = tags
 
     def format(self, record: LogRecord) -> str:
         """
@@ -54,15 +40,15 @@ class JSONFormatter(Formatter):
         """
         formatted_record = {
             'timestamp': self.formatTime(record, self.datefmt),
-            'sigla': self.acronym,
+            'sigla': self.tags.get('sigla'),
             'message': record.getMessage(),
             'level': record.levelname,
-            'service': f'{self.acronym} - {self.job_name or "N/A"}',
-            'version': 'v1.0',
-            'hostname': self.hostname or "N/A",
-            'env': self.environment,
+            'service': self.tags.get('service'),
+            'version': self.tags.get('version'),
+            'hostname': self.tags.get('hostname'),
+            'env': self.tags.get('environment'),
             'logger.name': record.funcName,
-            'correlationId': self.job_run_id or "N/A"
+            'correlationId': self.tags.get('correlationId'),
         }
 
         if record.exc_info:
@@ -84,15 +70,12 @@ class FormatterFactory:
 
     def create_json_formatter(
         self,         
-        environment: str,
-        acronym: str,
-        job_name: Optional[str] = None,
-        job_run_id: Optional[str] = None,
-        hostname: Optional[str] = None) -> JSONFormatter:
+        tags: Tags,
+    ) -> JSONFormatter:
         """
         Cria um novo JSONFormatter com as informações de ambiente e execução.
 
         Retorna:
             JSONFormatter: Formatter JSON criado.
         """
-        return JSONFormatter(environment, acronym, job_name, job_run_id, hostname)
+        return JSONFormatter(tags)
