@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict, Optional
+from typing import Literal, TypedDict, Optional, List
 
 class Tags(TypedDict):
     """
@@ -41,53 +41,51 @@ class Tags(TypedDict):
     hostname: Optional[str]
 
 class TagsValidator:
-    def validate(self, tags: Tags):
+    def validate(self, tags: Tags) -> List[str]:
         """
-        Valida os atributos de um dicionário de metadados de uma aplicação.
+        Valida os atributos de um dicionário de metadados e retorna uma lista de erros encontrados.
 
         Parâmetros:
             - tags (Tags): Dicionário de metadados a ser validado.
 
-        Exceções:
-            - ValueError: Se algum atributo obrigatório não for informado.
-            - ValueError: Se cloud_provider e datacenter forem informados ao mesmo tempo.
-            - ValueError: Se cloud_provider e datacenter não forem informados.
         """
+        errors = []
+        
         if not tags.get('sigla'):
-            raise ValueError('A sigla do projeto é obrigatória')
+            errors.append('a sigla do projeto é obrigatória')
 
         if not tags.get('cloud_provider') and not tags.get('datacenter'):
-            raise ValueError('É necessário informar o provedor de nuvem ou o datacenter')
+            errors.append('é necessário informar o provedor de nuvem ou o datacenter')
 
         if tags.get('cloud_provider') and tags.get('datacenter'):
-            raise ValueError('Não é possível informar o provedor de nuvem e o datacenter ao mesmo tempo')
+            errors.append('não é possível informar o provedor de nuvem e o datacenter ao mesmo tempo')
 
         if not tags.get('condominio'):
-            raise ValueError('O condomínio da aplicação é obrigatório')
+            errors.append('o condomínio da aplicação é obrigatório')
 
         if not tags.get('account_id'):
-            raise ValueError('O ID da conta é obrigatório')
+            errors.append('o ID da conta é obrigatório')
 
         if not tags.get('environment'):
-            raise ValueError('O ambiente da aplicação é obrigatório')
+            errors.append('o ambiente da aplicação é obrigatório')
 
         if not tags.get('version'):
-            raise ValueError('A versão da aplicação é obrigatória')
+            errors.append('a versão da aplicação é obrigatória')
 
         if not tags.get('service'):
-            raise ValueError('O nome do serviço é obrigatório')
+            errors.append('o nome do serviço é obrigatório')
 
         if not tags.get('produto'):
-            raise ValueError('O produto da aplicação é obrigatório')
+            errors.append('o produto da aplicação é obrigatório')
 
         if not tags.get('jornada'):
-            raise ValueError('A jornada da aplicação é obrigatória')
+            errors.append('a jornada da aplicação é obrigatória')
 
         if not tags.get('correlationId'):
-            raise ValueError('O ID de correlação é obrigatório')
+            errors.append('o ID de correlação é obrigatório')
 
         if tags.get('cloud_provider') == 'aws' or tags.get('condominio') in ['devops', 'tradops']:
             if not tags.get('repo_url'):
-                raise ValueError('A URL do repositório é obrigatória')
+                errors.append('a URL do repositório é obrigatória')
 
-        return True
+        return errors

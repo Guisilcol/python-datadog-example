@@ -1,4 +1,3 @@
-from typing import Literal, Optional
 from logging import Logger
 from pythondatadogexample.datadog_api import (
     HTTPLogFactory, 
@@ -51,7 +50,10 @@ def get_datadog_api_logger(
     """
     
     # Validação das tags. Se houver erro, uma exceção é levantada.
-    TagsValidator().validate(tags)
+    errors = TagsValidator().validate(tags)
+    if errors:
+        raise ValueError(f'Erro ao validar tags: {", ".join(errors)}')
+    
     
     # Cria o formatter JSON
     formatter = FormatterFactory().create_json_formatter(tags)
