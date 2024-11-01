@@ -2,7 +2,6 @@ import os
 from logging import StreamHandler, LogRecord, INFO, DEBUG, ERROR, WARNING, CRITICAL
 from typing import Literal
 from datadog_api_client.v2.api.logs_api import LogsApi
-
 from pythondatadogexample.datadog_api import HTTPLogFactory
 from pythondatadogexample.formatter import Formatter
 from pythondatadogexample.tags import Tags
@@ -15,18 +14,18 @@ LEVELS_MAP = {
     'CRITICAL': CRITICAL
 }
 
-
 PossibleLevels = Literal['INFO', 'DEBUG', 'ERROR', 'WARNING', 'CRITICAL']
 
 
 class DatadogHandler(StreamHandler):
     """
     LogHandler personalizado para envio de logs ao Datadog usando a API Datadog.
-    
+
     Atributos:
-        configuration (Configuration): Instância da configuração da API do Datadog.
-        service_name (str): Nome do serviço ao qual o log pertence, utilizado para identificar a origem do log no Datadog.
-        ddsource (str): Identificação da fonte do log no Datadog.
+        tags (Tags): Tags de contexto do ambiente e execução.
+        logs_api (LogsApi): Instância da API de logs do Datadog para envio de logs.
+        log_factory (HTTPLogFactory): Fábrica de logs HTTP para formatação de logs.
+        raise_on_error (bool): Define se uma exceção será levantada em caso de erro no envio de logs.
     """
 
     def __init__(
@@ -39,12 +38,13 @@ class DatadogHandler(StreamHandler):
         **kwargs
     ) -> None:
         """
-        Inicializa o DatadogHandler com a configuração da API, nome do serviço e fonte do log.
+        Inicializa o DatadogHandler com a configuração da API, tags e parâmetros de controle.
 
         Parâmetros:
-            configuration (Configuration): Configuração da API Datadog.
-            service_name (str): Nome do serviço que envia o log.
-            ddsource (str): Fonte identificadora do log.
+            tags (Tags): Tags de contexto como ambiente, serviço e host.
+            logs_api (LogsApi): Instância da API de logs do Datadog.
+            log_factory (HTTPLogFactory): Fábrica para criação de logs HTTP formatados.
+            raise_on_error (bool): Define se erros de envio devem levantar exceções.
         """
         super().__init__(*args, **kwargs)
         self.tags = tags
@@ -59,24 +59,27 @@ class DatadogHandler(StreamHandler):
         Parâmetros:
             record (LogRecord): Registro de log a ser enviado ao Datadog.
         """
-        msg = self.format(record)        
+        msg = self.format(record)
         ddtags = [f"{key}:{value}" for key, value in self.tags.items()]
         ddtags = ','.join(ddtags)
         
-        body = self.log_factory.create(self.tags.get('ddsource'), 
-                                       ddtags, 
-                                       msg, 
-                                       self.tags.get('service'))
+        body = self.log_factory.create(
+            self.tags.get('ddsource'), 
+            ddtags, 
+            msg, 
+            self.tags.get('service')
+        )
 
         try: 
             self.logs_api.submit_log(body)
         except Exception as e:
-            error_message = f"An error occurred when trying to submit the log to Datadog using the LogsApi.submit_log method"
+            error_message = "Erro ao tentar enviar o log para o Datadog usando o método LogsApi.submit_log."
             if self.raise_on_error:
                 raise Exception(error_message) from e
 
             print(error_message)
             print(e)
+
 
 class LogHandlerFactory:
     """
@@ -89,24 +92,26 @@ class LogHandlerFactory:
         logs_api: LogsApi, 
         log_factory: HTTPLogFactory, 
         level: PossibleLevels, 
-        formater: Formatter,
+        formatter: Formatter,
         raise_on_error: bool = False
     ) -> StreamHandler:
         """
         Cria e configura um handler para envio de logs ao Datadog com o nível de log especificado.
-        
+
         Parâmetros:
-            configuration (Configuration): Configuração da API Datadog.
-            service_name (str): Nome do serviço que envia o log.
-            ddsource (str): Fonte identificadora do log.
+            tags (Tags): Tags de contexto para o log.
+            logs_api (LogsApi): Instância da API de logs do Datadog.
+            log_factory (HTTPLogFactory): Fábrica de logs HTTP para envio.
             level (PossibleLevels): Nível do log (ex.: 'INFO', 'ERROR').
+            formatter (Formatter): Formatter para formatação do log.
+            raise_on_error (bool): Define se erros de envio devem levantar exceções.
 
         Retorna:
             StreamHandler: Instância de DatadogHandler configurada para o Datadog.
         """
         handler = DatadogHandler(tags, logs_api, log_factory, raise_on_error)
         handler.setLevel(LEVELS_MAP[level])
-        handler.setFormatter(formater)
+        handler.setFormatter(formatter)
         return handler
     
     def create_console_handler(self, level: PossibleLevels, formatter: Formatter) -> StreamHandler:
@@ -115,6 +120,7 @@ class LogHandlerFactory:
 
         Parâmetros:
             level (PossibleLevels): Nível do log (ex.: 'INFO', 'ERROR').
+            formatter (Formatter): Formatter para formatação do log.
 
         Retorna:
             StreamHandler: Instância de StreamHandler configurada para exibir logs no console.
