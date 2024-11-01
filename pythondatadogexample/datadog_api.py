@@ -3,6 +3,7 @@ from datadog_api_client.v2 import Configuration, ApiClient
 from datadog_api_client.v2.models import HTTPLog, HTTPLogItem
 from datadog_api_client.v2.api.logs_api import LogsApi
 
+
 class ConfigurationFactory:
     """Fábrica para criar instâncias de Configuration para a API Datadog."""
 
@@ -18,14 +19,8 @@ class ConfigurationFactory:
         Retorna:
             Configuration: Instância de Configuration com autenticação e configuração de site.
         """
-        keys = {
-            'apiKeyAuth': api_key,
-            'appKeyAuth': app_key
-        }
-        
-        server_variables = {
-            "site": site
-        }
+        keys = {'apiKeyAuth': api_key, 'appKeyAuth': app_key}
+        server_variables = {"site": site}
         
         return Configuration(api_key=keys, server_variables=server_variables)
 
@@ -62,14 +57,7 @@ class HTTPLogFactory:
         Retorna:
             HTTPLog: Instância de HTTPLog configurada para envio ao Datadog.
         """
-        return HTTPLog([
-            HTTPLogItem(
-                ddsource=ddsource,
-                ddtags=ddtags,
-                message=message,
-                service=service
-            )
-        ])
+        return HTTPLog([HTTPLogItem(ddsource=ddsource, ddtags=ddtags, message=message, service=service)])
 
 
 class LogsApiFactory:
