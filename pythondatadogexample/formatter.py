@@ -1,29 +1,25 @@
 from typing import Optional
 from logging import Formatter, LogRecord
 from json import dumps
-
 from pythondatadogexample.tags import Tags
+
 
 class JSONFormatter(Formatter):
     """
     Formata logs no formato JSON com informações de contexto do ambiente e do job em execução.
 
     Atributos:
-        environment (str): Ambiente onde o código está sendo executado (ex.: produção, desenvolvimento).
-        acronym (str): Acrônimo identificador do serviço.
-        job_name (Optional[str]): Nome do job em execução.
-        job_run_id (Optional[str]): ID de execução do job.
-        hostname (Optional[str]): Nome do host onde o código está rodando.
+        tags (Tags): Objeto contendo informações de tags como ambiente, serviço e correlação.
     """
 
-    def __init__(
-        self,
-        tags: Tags,
-        *args,
-        **kwargs
-    ):
+    def __init__(self, tags: Tags, *args, **kwargs):
         """
         Inicializa o JSONFormatter com informações de ambiente, serviço e execução.
+
+        Parâmetros:
+            tags (Tags): Objeto de tags contendo dados de contexto como ambiente e serviço.
+            *args: Argumentos posicionais adicionais para o inicializador.
+            **kwargs: Argumentos nomeados adicionais para o inicializador.
         """
         super().__init__(*args, **kwargs)
         self.tags = tags
@@ -53,29 +49,23 @@ class JSONFormatter(Formatter):
 
         if record.exc_info:
             formatted_record['exception'] = self.formatException(record.exc_info)
-            
+
         return dumps(formatted_record)
+
 
 class FormatterFactory:
     """
-    Fábrica de formatters JSON para logs.
-
-    Atributos:
-        environment (str): Ambiente onde o código está sendo executado (ex.: produção, desenvolvimento).
-        acronym (str): Acrônimo identificador do serviço.
-        job_name (Optional[str]): Nome do job em execução.
-        job_run_id (Optional[str]): ID de execução do job.
-        hostname (Optional[str]): Nome do host onde o código está rodando.
+    Fábrica para criar formatadores JSON para logs, utilizando contexto de ambiente e execução.
     """
 
-    def create_json_formatter(
-        self,         
-        tags: Tags,
-    ) -> JSONFormatter:
+    def create_json_formatter(self, tags: Tags) -> JSONFormatter:
         """
-        Cria um novo JSONFormatter com as informações de ambiente e execução.
+        Cria uma instância de JSONFormatter com informações de ambiente e execução.
+
+        Parâmetros:
+            tags (Tags): Objeto de tags contendo dados de contexto como ambiente e serviço.
 
         Retorna:
-            JSONFormatter: Formatter JSON criado.
+            JSONFormatter: Formatter JSON configurado com as tags fornecidas.
         """
         return JSONFormatter(tags)
