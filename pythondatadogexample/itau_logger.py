@@ -64,7 +64,7 @@ def get_datadog_api_logger(
 
     # Criação dos handlers para envio dos logs ao Datadog e console.
     log_factory = HTTPLogFactory()
-    datadog_handler = LogHandlerFactory().create_datadog_handler(
+    datadog_handler = LogHandlerFactory().create_datadog_api_handler(
         tags, logs_api, log_factory, data_dog_handler_level, formatter, raise_on_error
     ) 
     console_handler = LogHandlerFactory().create_console_handler(console_handler_level, formatter)

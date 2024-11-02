@@ -86,7 +86,7 @@ class LogHandlerFactory:
     Fábrica para criação de instâncias de LogHandler, permitindo a criação de handlers para diferentes destinos (Datadog e console).
     """
 
-    def create_datadog_handler(
+    def create_datadog_api_handler(
         self, 
         tags: Tags,
         logs_api: LogsApi, 
