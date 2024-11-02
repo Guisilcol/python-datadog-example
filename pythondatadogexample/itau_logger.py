@@ -54,7 +54,6 @@ def get_datadog_api_logger(
     if errors:
         raise ValueError(f'Erro ao validar tags: {", ".join(errors)}')
     
-    
     # Cria o formatter JSON
     formatter = FormatterFactory().create_json_formatter(tags)
 

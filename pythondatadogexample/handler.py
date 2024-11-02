@@ -17,7 +17,7 @@ LEVELS_MAP = {
 PossibleLevels = Literal['INFO', 'DEBUG', 'ERROR', 'WARNING', 'CRITICAL']
 
 
-class DatadogHandler(StreamHandler):
+class DatadogAPIHandler(StreamHandler):
     """
     LogHandler personalizado para envio de logs ao Datadog usando a API Datadog.
 
@@ -38,7 +38,7 @@ class DatadogHandler(StreamHandler):
         **kwargs
     ) -> None:
         """
-        Inicializa o DatadogHandler com a configuração da API, tags e parâmetros de controle.
+        Inicializa o DatadogAPIHandler com a configuração da API, tags e parâmetros de controle.
 
         Parâmetros:
             tags (Tags): Tags de contexto como ambiente, serviço e host.
@@ -107,9 +107,9 @@ class LogHandlerFactory:
             raise_on_error (bool): Define se erros de envio devem levantar exceções.
 
         Retorna:
-            StreamHandler: Instância de DatadogHandler configurada para o Datadog.
+            StreamHandler: Instância de DatadogAPIHandler configurada para o Datadog.
         """
-        handler = DatadogHandler(tags, logs_api, log_factory, raise_on_error)
+        handler = DatadogAPIHandler(tags, logs_api, log_factory, raise_on_error)
         handler.setLevel(LEVELS_MAP[level])
         handler.setFormatter(formatter)
         return handler
